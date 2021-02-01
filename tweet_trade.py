@@ -237,6 +237,68 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
             pass
 
 
+def check_for_positions(account_id, access_token):
+    """Check for current positions and return them as json data."""
+    
+    # Get the account's current positions
+    url = 'https://api.tdameritrade.com/v1/accounts/' + account_id
+    headers = {
+        'Authorization': 'Bearer '+ access_token,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    params = {'fields':'positions'}
+    payload = {}
+    response = requests.request("GET", url, headers=headers, params=params, data=payload)
+    data = response.json()
+    return data    
+
+
+def create_position_ticker_list(data):
+    """Take the current position data and create list of tickers"""
+
+    ticker_list = []
+    try:
+        for x in range(len(data['securitiesAccount']['positions'])):
+            # If any positions are detected, take necessary data from them
+            ticker = data['securitiesAccount']['positions'][x]['instrument']['symbol'].split('_')[0]
+            ticker_list.append(ticker)
+
+    except:
+        # no positions found
+        print('No positions detected')
+        pass
+
+    return ticker_list  
+
+
+def prepend_dollar_sign_to_ticker(list, str):
+    """Add a dollar sign character to the beginning of each ticker in the list"""    
+
+    str += '{0}'
+    list = [str.format(i) for i in list] 
+    return(list)     
+
+
+def send_position_tweet(ticker_list, key, secret_key, token, secret_token):
+    """Take the position ticker list and post to the Twitter account after auth"""
+
+    # Authorize with the Twitter API
+    auth = tweepy.OAuthHandler(key, secret_key)
+    auth.set_access_token(token, secret_token)
+    api = tweepy.API(auth)
+
+    tickers_list_with_dollar_sign = prepend_dollar_sign_to_ticker(ticker_list, '$')
+    tickers_string = " "
+    tickers_string = tickers_string.join(tickers_list_with_dollar_sign)
+
+    api.update_status(
+        "-----POSITION ALERT----- \n" 
+        + 'Premarket Current Positions \n' 
+        + '-------------------------------- \n' 
+        + tickers_string + '\n'
+        +'--------------------------------')
+
+
 def tweet_trades_from_prior_day():
     """Main flow for checking recent trades and posting them to Twitter. Runs on schedule in clock.py"""
 
@@ -247,18 +309,27 @@ def tweet_trades_from_prior_day():
 
 
 def tweet_positions():
-    """TODO: Build out function that gets current positions and Tweets them each monday morning premarket"""
+    """Main flow for current positions and posting them to Twitter. Runs on schedule in clock.py"""
 
     access_token = get_access_token(env_client_id, env_redirect_uri, env_refresh_token, env_code)
-    pass
+    position_data = check_for_positions(env_account_id, access_token)
+    ticker_list = create_position_ticker_list(position_data)
+    send_position_tweet(ticker_list, env_twitter_key, env_twitter_secret_key, env_twitter_token, env_twitter_secret_token)
 
 
 
-# Use this for testing locally
-access_token = get_access_token(test_client_id, test_redirect_uri, test_refresh_token, test_code)
-print(access_token[0:10])
-trade_data = check_for_recent_trades(test_account_id, access_token)
-prepared_tweets = create_tweet_list(trade_data)
-print(prepared_tweets)
-send_tweets(prepared_tweets, test_twitter_key, test_twitter_secret_key, test_twitter_token, test_twitter_secret_token)
+# Use this for testing transactions locally
+# access_token = get_access_token(test_client_id, test_redirect_uri, test_refresh_token, test_code)
+# print(access_token[0:10])
+# trade_data = check_for_recent_trades(test_account_id, access_token)
+# prepared_tweets = create_tweet_list(trade_data)
+# print(prepared_tweets)
+# send_tweets(prepared_tweets, test_twitter_key, test_twitter_secret_key, test_twitter_token, test_twitter_secret_token)
 
+# Use this for testing positions locally
+# access_token = get_access_token(test_client_id, test_redirect_uri, test_refresh_token, test_code)
+# print(access_token[0:10])
+# position_data = check_for_positions(test_account_id, access_token)
+# ticker_list = create_position_ticker_list(position_data)
+# print(ticker_list)
+# send_position_tweet(ticker_list, test_twitter_key, test_twitter_secret_key, test_twitter_token, test_twitter_secret_token)

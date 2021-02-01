@@ -7,7 +7,7 @@ sched = BlockingScheduler()
 def tweet_trades_from_prior_day_scheduled_job():
     tweet_trades_from_prior_day()
 
-@sched.scheduled_job('cron', day_of_week='mon', hour='5', minute="59", timezone='America/New_York')
+@sched.scheduled_job('cron', day_of_week='mon', hour='5', minute="55", timezone='America/New_York')
 def tweet_positions_scheduled_job():
     tweet_positions()
 

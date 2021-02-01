@@ -114,27 +114,27 @@ class Tweet(object):
     quantity = ""
     ticker = ""
     asset_description = ""
-    entry_price = ""
+    price = ""
     tx_date = ""
     tx_time = ""
     instrument = ""
     trade_type = ""
 
-    def __init__(self, quantity, ticker, asset_description, entry_price, tx_date, tx_time, instrument, trade_type):
+    def __init__(self, quantity, ticker, asset_description, price, tx_date, tx_time, instrument, trade_type):
         self.quantity = str(quantity)
         self.ticker = ticker
         self.asset_description = asset_description
-        self.entry_price = str(entry_price)
+        self.price = str(price)
         self.tx_date = str(tx_date)
         self.tx_time = str(tx_time)
         self.instrument = instrument
         self.trade_type = trade_type
 
 
-def make_tweet(quantity, ticker, asset_description, entry_price, tx_date, tx_time, instrument, trade_type):
+def make_tweet(quantity, ticker, asset_description, price, tx_date, tx_time, instrument, trade_type):
     """Create and return a new instance of a Tweet object."""
 
-    tweet = Tweet(quantity, ticker, asset_description, entry_price, tx_date, tx_time, instrument, trade_type)
+    tweet = Tweet(quantity, ticker, asset_description, price, tx_date, tx_time, instrument, trade_type)
     return tweet
 
 
@@ -171,7 +171,7 @@ def create_tweet_list(data):
                     quantity = data[x]['transactionItem']['amount']
                     ticker = data[x]['transactionItem']['instrument']['symbol']
                     asset_description = 'SHARES'
-                    entry_price = data[x]['transactionItem']['price']
+                    price = data[x]['transactionItem']['price']
                     tx_date = data[x]['transactionDate'].split('T')[0]
                     tx_time = data[x]['transactionDate'].split('T')[1]
                     instrument = "EQUITY"
@@ -182,14 +182,14 @@ def create_tweet_list(data):
                     quantity = data[x]['transactionItem']['amount']
                     ticker = data[x]['transactionItem']['instrument']['underlyingSymbol']
                     asset_description = data[x]['transactionItem']['instrument']['description']
-                    entry_price = data[x]['transactionItem']['price']
+                    price = data[x]['transactionItem']['price']
                     tx_date = data[x]['transactionDate'].split('T')[0]
                     tx_time = data[x]['transactionDate'].split('T')[1]
                     instrument = "OPTION"
                     trade_type = data[x]['description']
 
                 # Format data into tweet and prepare to print it
-                trade_tweet = make_tweet(quantity, ticker, asset_description, entry_price, tx_date, tx_time, instrument, trade_type)
+                trade_tweet = make_tweet(quantity, ticker, asset_description, price, tx_date, tx_time, instrument, trade_type)
                 tweet_list.append(trade_tweet)
         except:
             # no trades found
@@ -219,8 +219,8 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
                 "-----TRADE ALERT----- \n" 
                 + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
                 + '-------------------------------- \n' 
-                + 'Entry Price: $' + tweet.entry_price +'\n' 
-                + 'Order Filled: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                + 'Price: $' + tweet.price +'\n' 
+                + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
                 +'--------------------------------')
 
         elif tweet.instrument == "OPTION":
@@ -228,8 +228,8 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
                 "-----TRADE ALERT----- \n" 
                 + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
                 + '-------------------------------- \n' 
-                + 'Entry Price: $' + tweet.entry_price +'\n' 
-                + 'Order Filled: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                + 'Price: $' + tweet.price +'\n' 
+                + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
                 +'--------------------------------')
 
         else:

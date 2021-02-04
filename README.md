@@ -1,5 +1,5 @@
 # tos-trade-bot
-Think or Swim python bot that tweets all my trades from the previous day each morning at 6:00am EST.
+Think or Swim python bot that tweets all my trades from the previous day and my current positions each morning at 6:00am EST.
 
 ## Notes
 * `access_token` expires after 30 minutes
@@ -8,5 +8,4 @@ Think or Swim python bot that tweets all my trades from the previous day each mo
 
 ## TODO
 * Change hosting to setup persistent auth flow
-* Build out function for Tweeting all my positions each Monday premarket
 * Implement tda streamer service for realtime trade detection

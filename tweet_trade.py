@@ -264,7 +264,7 @@ def check_timeline_for_ticker(ticker, api):
     """Check for the most recent Tweet with the ticker on the timeline and return the id"""
 
     for status in tweepy.Cursor(api.user_timeline, screen_name='@stephens_log', tweet_mode="extended").items():
-        if str('$'+ticker) in status.full_text:
+        if str('$'+ticker) in status.full_text and 'POSITION ALERT' not in status.full_text:
             # Return the first, most recent instance of the tweet with that ticker
             return status.id
 
@@ -293,7 +293,9 @@ def create_position_ticker_list(data):
         for x in range(len(data['securitiesAccount']['positions'])):
             # If any positions are detected, take necessary data from them
             ticker = data['securitiesAccount']['positions'][x]['instrument']['symbol'].split('_')[0]
-            ticker_list.append(ticker)
+            # Check here to make sure tickers are not duplicated
+            if ticker not in ticker_list:
+                ticker_list.append(ticker) 
 
     except:
         # no positions found

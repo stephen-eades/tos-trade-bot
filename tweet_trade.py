@@ -2,7 +2,7 @@
 
 This module provides functions and classes that can be called on a 
 reoccurring basis to send a Tweet for each stock trade that occurs.
-Additionally will Tweet current positions at the beginning of each week.
+Additionally will Tweet current positions at the beginning of each day.
 This is built for TD Ameritrade's API, but could be easily repurposed.
 A Twitter developer account and TD Ameritrade account are required.
 """
@@ -209,32 +209,64 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
     plus_minus_sign = ""
 
     for tweet in list_of_tweets:
+        # Determine is buying or selling
         if tweet.trade_type == "BUY TRADE":
             plus_minus_sign = "+"
         else:
             plus_minus_sign = "-"
 
+        # Check if the ticker already exists on the timeline
+        reply_tweet_id = check_timeline_for_ticker(tweet.ticker, api)
+
+        # Determine if Equity or Option
         if tweet.instrument == "EQUITY":
-            api.update_status(
-                "-----TRADE ALERT----- \n" 
-                + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
-                + '-------------------------------- \n' 
-                + 'Price: $' + tweet.price +'\n' 
-                + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
-                +'--------------------------------')
+            if (reply_tweet_id):
+                api.update_status(
+                    "-----TRADE ALERT----- \n" 
+                    + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
+                    + '-------------------------------- \n' 
+                    + 'Price: $' + tweet.price +'\n' 
+                    + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                    +'--------------------------------', reply_tweet_id)
+            else:
+                api.update_status(
+                    "-----TRADE ALERT----- \n" 
+                    + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
+                    + '-------------------------------- \n' 
+                    + 'Price: $' + tweet.price +'\n' 
+                    + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                    +'--------------------------------')
 
         elif tweet.instrument == "OPTION":
-            api.update_status(
-                "-----TRADE ALERT----- \n" 
-                + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
-                + '-------------------------------- \n' 
-                + 'Price: $' + tweet.price +'\n' 
-                + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
-                +'--------------------------------')
+            if (reply_tweet_id):
+                api.update_status(
+                    "-----TRADE ALERT----- \n" 
+                    + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
+                    + '-------------------------------- \n' 
+                    + 'Price: $' + tweet.price +'\n' 
+                    + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                    +'--------------------------------', reply_tweet_id)
+            else:
+                api.update_status(
+                    "-----TRADE ALERT----- \n" 
+                    + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
+                    + '-------------------------------- \n' 
+                    + 'Price: $' + tweet.price +'\n' 
+                    + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
+                    +'--------------------------------')
 
         else:
             # add new instrument types here
             pass
+
+
+def check_timeline_for_ticker(ticker, api):
+    """Check for the most recent Tweet with the ticker on the timeline and return the id"""
+
+    for status in tweepy.Cursor(api.user_timeline, screen_name='@stephens_log', tweet_mode="extended").items():
+        if str('$'+ticker) in status.full_text:
+            # Return the first, most recent instance of the tweet with that ticker
+            return status.id
 
 
 def check_for_positions(account_id, access_token):

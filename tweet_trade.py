@@ -261,7 +261,7 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
 
 
 def check_timeline_for_ticker(ticker, api):
-    """Check for the most recent Tweet with the ticker on the timeline and return the id"""
+    """Check if there are any Tweets with the ticker on the timeline"""
 
     for status in tweepy.Cursor(api.user_timeline, screen_name='@stephens_log', tweet_mode="extended").items():
         if str('$'+ticker) in status.full_text and 'POSITION ALERT' not in status.full_text:
@@ -293,13 +293,14 @@ def create_position_ticker_list(data):
         for x in range(len(data['securitiesAccount']['positions'])):
             # If any positions are detected, take necessary data from them
             ticker = data['securitiesAccount']['positions'][x]['instrument']['symbol'].split('_')[0]
-            # Check here to make sure tickers are not duplicated
+            # Do a check here to make sure tickers are not duplicated
             if ticker not in ticker_list:
-                ticker_list.append(ticker) 
+                ticker_list.append(ticker)
 
     except:
         # no positions found
         print('No positions detected')
+        ticker_list = ['No active positions']
         pass
 
     return ticker_list  

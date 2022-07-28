@@ -321,13 +321,13 @@ def send_position_tweet(ticker_list, key, secret_key, token, secret_token):
     auth = tweepy.OAuthHandler(key, secret_key)
     auth.set_access_token(token, secret_token)
     api = tweepy.API(auth)
+    tickers_string = " "
 
-    if ticker_list:
-        tickers_list_with_dollar_sign = prepend_dollar_sign_to_ticker(ticker_list, '$')
-        tickers_string = " "
-        tickers_string = tickers_string.join(tickers_list_with_dollar_sign)
-    else:
+    if "No active positions" in ticker_list:
         tickers_string = tickers_string.join(ticker_list)
+    else:
+        tickers_list_with_dollar_sign = prepend_dollar_sign_to_ticker(ticker_list, '$')
+        tickers_string = tickers_string.join(tickers_list_with_dollar_sign)
 
     api.update_status(
         "-----POSITION ALERT----- \n" 

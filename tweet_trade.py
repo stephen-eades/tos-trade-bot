@@ -191,6 +191,8 @@ def create_tweet_list(data):
                 # Format data into tweet and prepare to print it
                 trade_tweet = make_tweet(quantity, ticker, asset_description, price, tx_date, tx_time, instrument, trade_type)
                 tweet_list.append(trade_tweet)
+            else:
+                print('no trades detected in past 24 hours')
         except:
             # no trades found
             print('No trades detected')
@@ -222,15 +224,15 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
         if tweet.instrument == "EQUITY":
             if (reply_tweet_id):
                 api.update_status(
-                    "-----TRADE ALERT----- \n" 
+                    status="-----TRADE ALERT----- \n" 
                     + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
                     + '-------------------------------- \n' 
                     + 'Price: $' + tweet.price +'\n' 
                     + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
-                    +'--------------------------------', reply_tweet_id)
+                    +'--------------------------------', in_reply_to_status_id=reply_tweet_id)
             else:
                 api.update_status(
-                    "-----TRADE ALERT----- \n" 
+                    status="-----TRADE ALERT----- \n" 
                     + plus_minus_sign + tweet.quantity +' $'+ tweet.ticker + ' SHARES \n' 
                     + '-------------------------------- \n' 
                     + 'Price: $' + tweet.price +'\n' 
@@ -240,15 +242,15 @@ def send_tweets(list_of_tweets, key, secret_key, token, secret_token):
         elif tweet.instrument == "OPTION":
             if (reply_tweet_id):
                 api.update_status(
-                    "-----TRADE ALERT----- \n" 
+                    status="-----TRADE ALERT----- \n" 
                     + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
                     + '-------------------------------- \n' 
                     + 'Price: $' + tweet.price +'\n' 
                     + 'Timestamp: ' + tweet.tx_date+'@'+tweet.tx_time+'\n'
-                    +'--------------------------------', reply_tweet_id)
+                    +'--------------------------------', in_reply_to_status_id=reply_tweet_id)
             else:
                 api.update_status(
-                    "-----TRADE ALERT----- \n" 
+                    status="-----TRADE ALERT----- \n" 
                     + plus_minus_sign + tweet.quantity +' $'+ tweet.asset_description+ '\n' 
                     + '-------------------------------- \n' 
                     + 'Price: $' + tweet.price +'\n' 
